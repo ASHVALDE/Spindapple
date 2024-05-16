@@ -143,12 +143,13 @@ void WriteImage(const char *fileName, byte *pixels, int32 width, int32 height, i
   fclose(outputFile);
 }
 
-const int Divitions = 50;
+const int Divitions = 30;
 
 int main()
 {
-
-  for (int bpmImages = 1; bpmImages <= 6573; bpmImages++)
+  std::ofstream myInfoFile;
+  myInfoFile.open("info.txt");
+  for (int bpmImages = 1; bpmImages <= 6572; bpmImages++)
   {
     byte *pixels;
     int32 width;
@@ -156,25 +157,29 @@ int main()
     int32 bytesPerPixel;
     std::stringstream ss;
     std::ofstream myfile;
+    
     ss << std::setw(4) << std::setfill('0') << bpmImages;
     std::string filename = ss.str();
 
     std::string inputFile = "./frames/" + filename + ".bmp";
     std::string outputFile = "./framesOut/" + filename + ".txt";
-
+    std::cout<<"Leyendo "<<filename<<"\n";
     ReadImage(inputFile.c_str(), &pixels, &width, &height, &bytesPerPixel);
     myfile.open(outputFile.c_str());
-
+    
+    myInfoFile <<"Tamaño del bloque: "<< width / Divitions << " - " << height / Divitions << "\n";
+    
     for (int divY = 0; divY < Divitions; divY++)
     {
       for (int divX = 0; divX < Divitions; divX++)
       {
-
         float values = 0;
         float mesurements = 0;
-
-        int initialXScanPos = divY * (height / Divitions);
-        for (int yScan = initialXScanPos; yScan < initialXScanPos + (height / Divitions); yScan++)
+        float xMean = 0;
+        float yMean = 0;
+        float posMeanN = 0;
+        int initialYScanPos = divY * (height / Divitions);
+        for (int yScan = initialYScanPos; yScan < initialYScanPos + (height / Divitions); yScan++)
         {
           int initialXScanPos = divX * (width * 3 / Divitions);
           for (int xScan = initialXScanPos; xScan < initialXScanPos + (width * 3 / Divitions); xScan = xScan + 3)
@@ -184,21 +189,42 @@ int main()
             byte blue = *(&pixels[xScan + 2 + (width * yScan * 3)]);
             byte alpha = *(&pixels[xScan + 3 + (width * yScan * 3)]);
             values = values + ((red + green + blue) / 3);
+            if (values>63)
+            {
+              xMean = xMean + ((xScan-initialXScanPos)/3);
+              yMean = yMean + yScan-initialYScanPos;
+              posMeanN++;
+            }
             mesurements++;
           }
         }
 
         float valuePerBlock = values / mesurements;
-        if (valuePerBlock > 100)
+        int xCalcMean = xMean / posMeanN;
+        int yCalcMean = yMean / posMeanN;
+        if (valuePerBlock<51)
         {
-          myfile << "x";
+          myfile << "0.0.0"<<" ";
+        }
+        else if (valuePerBlock<102)
+        {
+          myfile << "1."<<xCalcMean<<"."<<yCalcMean<<" ";
+        }
+        else if (valuePerBlock<153)
+        {
+          myfile << "2."<<xCalcMean<<"."<<yCalcMean<<" ";
+        }
+        else if (valuePerBlock<204)
+        {
+          myfile << "3."<<xCalcMean<<"."<<yCalcMean<<" ";
         }
         else
         {
-          myfile << ".";
+          myfile << "4."<<xCalcMean<<"."<<yCalcMean<<" ";
         }
+        
       }
-      myfile << "\n";
+      myfile << "\n ";
     }
 
     myfile.close();
@@ -210,4 +236,5 @@ int main()
   //WriteImage("./frames/prueba.bmp", pixels, width, height, bytesPerPixel);
   //free(pixels);
   return 0;
+  myInfoFile.close();
 }
