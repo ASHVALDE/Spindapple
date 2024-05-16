@@ -17,7 +17,8 @@ typedef short int16;
 typedef unsigned char byte;
 
 #include <fstream>
-
+#include <sstream>
+#include <iomanip>
 //***Inputs*****
 // fileName: The name of the file to open
 //***Outputs****
@@ -142,36 +143,94 @@ void WriteImage(const char *fileName, byte *pixels, int32 width, int32 height, i
   fclose(outputFile);
 }
 
+const int Divitions = 50;
+
 int main()
 {
   byte *pixels;
   int32 width;
   int32 height;
   int32 bytesPerPixel;
+  for (int bpmImages = 0; bpmImages <= 2000; bpmImages++)
+  {
+      std::stringstream ss;
+      ss << std::setw(5) << std::setfill('0') << bpmImages;
+      std::string filename = ss.str();
+      std::cout<<filename;
+
+
+
+
+  }
+  /*
   ReadImage("./frames/01948.bmp", &pixels, &width, &height, &bytesPerPixel);
   std::ofstream myfile;
-  myfile.open ("prueba.txt");
+  myfile.open("prueba.txt");
+
+  //El CONVOLUCIONADOR :00000
+
+  for (int divY = 0; divY < Divitions; divY++)
+  {
+    for (int divX = 0; divX < Divitions; divX++)
+    {
+
+      float values = 0;
+      float mesurements = 0;
+
+      int initialXScanPos = divY * (height / Divitions);
+      for (int yScan = initialXScanPos; yScan < initialXScanPos +(height / Divitions) ; yScan++)
+      {
+        int initialXScanPos = divX * (width * 3 / Divitions);
+        for (int xScan = initialXScanPos; xScan < initialXScanPos + (width * 3 / Divitions); xScan = xScan + 3)
+        {
+          byte red = *(&pixels[xScan +(width*yScan*3)]);
+          byte green = *(&pixels[xScan+1 +(width*yScan*3)]);
+          byte blue = *(&pixels[xScan+2 +(width*yScan*3)]);
+          byte alpha = *(&pixels[xScan+3 +(width*yScan*3)]);
+          values = values + ((red+green+blue)/3);
+          mesurements++;
+
+        }
+      }
+
+    float valuePerBlock = values/mesurements;
+    if(valuePerBlock>100){
+        myfile<<"x";
+      }else{
+        myfile<<".";
+      }
+    }
+    myfile<<"\n";
+  }
+  /*
+
   for (int j = 0; j < height; j++)
   {
     for (int i = 0; i < width*3; i=i+3)
     {
       byte red = *(&pixels[i +(width*j*3)]);
-      byte green = *(&pixels[i+2 +(width*j*3)]);
-      byte blue = *(&pixels[i+3 +(width*j*3)]);
+      byte green = *(&pixels[i+1 +(width*j*3)]);
+      byte blue = *(&pixels[i+2 +(width*j*3)]);
+      byte alpha = *(&pixels[i+3 +(width*j*3)]);
+
       float b = (red+green+blue)/3;
-       
+
+
       if(b>100){
         myfile<<"x";
       }else{
         myfile<<".";
       }
-      
+
 
     }
     myfile<<"\n";
   }
-    myfile.close();
+  
+  myfile.close();
+
   WriteImage("./frames/prueba.bmp", pixels, width, height, bytesPerPixel);
   free(pixels);
+  */
   return 0;
 }
